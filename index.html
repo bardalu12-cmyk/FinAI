@@ -516,8 +516,14 @@
                     <h3 class="form-title">השאירו פרטים ונחזור אליכם</h3>
                     <p class="form-subtitle">הפגישה הראשונה ללא עלות - בואו ליישם את מה שלמדתם</p>
                     
-                    <!-- Contact Form -->
-                    <form id="contactForm" class="contact-form">
+                    <!-- Contact Form with Netlify -->
+                    <form name="finai-leads" method="POST" data-netlify="true" netlify-honeypot="bot-field" id="contactForm" class="contact-form">
+                        <!-- Netlify bot field (hidden) -->
+                        <input type="hidden" name="form-name" value="finai-leads" />
+                        <p style="display:none;">
+                            <label>Don't fill this out if you're human: <input name="bot-field" /></label>
+                        </p>
+                        
                         <div class="form-group">
                             <label for="fullName">
                                 <i class="fas fa-user"></i>
@@ -631,8 +637,6 @@
     
     <!-- JavaScript -->
     <script>
-        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbykBSqJglP4IN_A_E19osjZRhBspH3CKA3XVlgJKe5HxpeDID_LaI5o1kxbybzfnKRXuQ/exec';
-        
         const form = document.getElementById('contactForm');
         const submitBtn = document.getElementById('submitBtn');
         const formMessage = document.getElementById('formMessage');
@@ -646,33 +650,30 @@
             formMessage.className = 'form-message';
             formMessage.textContent = '';
             
-            // Get form data
-            const formData = {
-                name: document.getElementById('fullName').value,
-                phone: document.getElementById('phone').value,
-                email: document.getElementById('email').value
-            };
-            
             try {
-                // Send to Google Apps Script
-                const response = await fetch(SCRIPT_URL, {
+                // Get form data
+                const formData = new FormData(form);
+                
+                // Send to Netlify
+                const response = await fetch('/', {
                     method: 'POST',
-                    mode: 'no-cors',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify(formData)
+                    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                    body: new URLSearchParams(formData).toString()
                 });
                 
-                // Show success message
-                formMessage.className = 'form-message success';
-                formMessage.textContent = 'תודה רבה! הפרטים נשלחו בהצלחה ונחזור אליכם בהקדם.';
-                
-                // Reset form
-                form.reset();
-                
-                // Track success (optional)
-                console.log('Lead submitted successfully:', formData);
+                if (response.ok) {
+                    // Show success message
+                    formMessage.className = 'form-message success';
+                    formMessage.textContent = 'תודה רבה! הפרטים נשלחו בהצלחה ונחזור אליכם בהקדם.';
+                    
+                    // Reset form
+                    form.reset();
+                    
+                    // Track success
+                    console.log('Lead submitted successfully to Netlify Forms');
+                } else {
+                    throw new Error('Form submission failed');
+                }
                 
             } catch (error) {
                 // Show error message
@@ -692,7 +693,7 @@
             }
         });
         
-        console.log('FinAI Webinar Landing Page - Custom Form with Google Sheets Integration Active');
+        console.log('FinAI Webinar Landing Page - Netlify Forms Integration Active');
     </script>
 </body>
 </html>
